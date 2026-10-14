@@ -1,0 +1,26 @@
+
+{
+  "blogs": [
+    {
+      "id": 1,
+      "title": "My new website",
+      "body": "I am excited to share my new website with you! I built it to showcase my projects, share my experiences, and connect with other people interested in technology. I will continue improving the design and adding new features as I learn more about web development.",
+      "author": "mario",
+      "category": "Code · Design · Innovation"
+    },
+    {
+      "id": 2,
+      "title": "Welcome party!",
+      "body": "Last weekend, we organized a welcome party for our new community members. Everyone enjoyed meeting new people, sharing stories, playing games, and making new friends. It was a wonderful opportunity to build connections and create lasting memories together.",
+      "author": "yoshi",
+      "category": "People · Place · Perspective"
+    },
+    {
+      "id": 3,
+      "title": "Web dev top tips",
+      "body": "If you want to become a better web developer, start by mastering the fundamentals of HTML, CSS, and JavaScript. Practice by building small projects, learn how to use Git for version control, and gradually explore frameworks such as React. Read other developers' code, learn from your mistakes, and stay consistent with your practice.",
+      "author": "mario",
+      "category": "Tech · Career · Opportunity"
+    }
+  ]
+}
