@@ -6,7 +6,7 @@ const Footer = () => (
         <div className="site-footer-inner">
             <div className="site-footer-top">
                 <div className="site-footer-brand">
-                    <Link className="site-footer-logo" to="/">X-BLOG<span>.</span></Link>
+                    <Link className="site-footer-logo" to="/">BEYOND &lt;/&gt;<span>.</span></Link>
                     <p>A journal for curious minds. Thoughtful stories, fresh perspectives, and ideas worth passing on.</p>
                     <a className="site-footer-email" href="mailto:vincenttwizere12@gmail.com">
                         <Mail size={16} aria-hidden="true" />
@@ -25,7 +25,7 @@ const Footer = () => (
 
                 <div className="site-footer-column">
                     <h2>Get involved</h2>
-                    <Link to="/about">About X-Blog</Link>
+                    <Link to="/about">About BEYOND &lt;/&gt;</Link>
                     <Link to="/create">Write a story</Link>
                     <Link to="/contact">Contact</Link>
                 </div>
@@ -39,7 +39,7 @@ const Footer = () => (
             </div>
 
             <div className="site-footer-bottom">
-                <p>© {new Date().getFullYear()} X-Blog. Made for ideas that bring us forward.</p>
+                <p>© {new Date().getFullYear()} BEYOND &lt;/&gt;. Made for ideas that bring us forward.</p>
             </div>
         </div>
     </footer>

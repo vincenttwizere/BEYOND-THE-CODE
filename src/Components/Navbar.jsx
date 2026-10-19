@@ -17,6 +17,7 @@ const Navbar = () => {
                     <Search size={20} aria-hidden="true" />
                     <span>Search</span>
                 </NavLink>
+                <NavLink to="/login" className="auth-link">Login / Sign up</NavLink>
             </div>
         </nav>
     );

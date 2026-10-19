@@ -13,6 +13,7 @@ This project combines a polished reading experience with a flexible content stru
 - Category-based browsing and content discovery
 - Search-driven navigation for faster exploration
 - Contact form integration for direct email delivery via EmailJS
+- Login and sign-up form interface
 - Lightweight local content store powered by JSON Server
 - Fast development workflow using Vite
 
@@ -152,7 +153,8 @@ Important notes:
 ## Development Notes
 
 - Content is served through JSON Server using `data/db.json`.
-- The codebase is structured to support future enhancements such as authentication, CMS integration, or a database-backed backend.
+- Login and sign-up forms are available at `/login`; account submission requires an authentication backend, which is not yet connected.
+- The codebase is structured to support future enhancements such as CMS integration or a database-backed backend.
 
 ## Contribution
 

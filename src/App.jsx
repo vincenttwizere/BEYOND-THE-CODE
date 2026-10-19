@@ -11,6 +11,7 @@ import CategoryStories from "./Components/CategoryStories";
 import Contact from "./Components/Contact";
 import Search from "./Components/Search";
 import NotFound from "./Components/NotFound";
+import Auth from "./Components/Auth";
 
 const App = () => {
   
@@ -30,6 +31,7 @@ const App = () => {
             <Route path="/categories/:slug" element={<CategoryStories />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/login" element={<Auth />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
