@@ -6,12 +6,9 @@ import BlogList from "./Bloglist";
 const Search = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const query = searchParams.get("q") || "";
-    const { data: blogs, isPending, error } = useFetch("http://localhost:8000/blogs");
-
-    const filteredBlogs = blogs?.filter((blog) => {
-        const searchableText = `${blog.title} ${blog.body} ${blog.author} ${blog.category || ""}`.toLocaleLowerCase();
-        return query.trim() && searchableText.includes(query.trim().toLocaleLowerCase());
-    }) || [];
+    const searchUrl = query.trim() ? `/api/blogs?q=${encodeURIComponent(query.trim())}` : "/api/blogs";
+    const { data: blogs, isPending, error } = useFetch(searchUrl);
+    const filteredBlogs = query.trim() ? blogs || [] : [];
 
     const handleSubmit = (event) => {
         event.preventDefault();

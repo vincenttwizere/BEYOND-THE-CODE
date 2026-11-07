@@ -4,7 +4,7 @@ import categories from "../data/categories";
 const BlogDetails = () => {
 
     const { id } = useParams();
-    const { data: blog, isPending, error } = useFetch('http://localhost:8000/blogs/' + id);
+    const { data: blog, isPending, error } = useFetch('/api/blogs/' + id);
     const category = blog && categories.find((item) => item.name === blog.category);
     return (  
         <div className="blog-details">

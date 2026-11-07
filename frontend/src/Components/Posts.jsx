@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import useFetch from "../useFetch";
 import BlogList from "./Bloglist";
+import { useAuth } from "../useAuth";
 
 const Posts = () => {
-    const { data: blogs, isPending, error } = useFetch("http://localhost:8000/blogs");
+    const { user } = useAuth();
+    const { data: blogs, isPending, error } = useFetch("/api/blogs");
     const [authorFilter, setAuthorFilter] = useState("all");
     const authors = blogs ? [...new Set(blogs.map((blog) => blog.author).filter(Boolean))] : [];
     const filteredBlogs = blogs?.filter((blog) => authorFilter === "all" || blog.author === authorFilter) || [];
@@ -29,17 +31,17 @@ const Posts = () => {
                             <option value="all">Everyone</option>
                             {authors.map((author) => <option key={author} value={author}>{author}</option>)}
                         </select>
-                        <Link className="editorial-text-link" to="/create">Write a story <span aria-hidden="true">+</span></Link>
+                        {user?.role === "admin" && <Link className="editorial-text-link" to="/create">Write a story <span aria-hidden="true">+</span></Link>}
                     </div>
                 )}
 
                 {isPending && <div className="editorial-notice" role="status">Loading stories…</div>}
                 {error && <div className="editorial-notice editorial-notice-error" role="alert">{error}</div>}
                 {blogs && <BlogList blogs={filteredBlogs} title={authorFilter === "all" ? "Published stories" : `Stories by ${authorFilter}`} />}
-                <div className="editorial-page-cta">
+                {user?.role === "admin" && <div className="editorial-page-cta">
                     <p>Have a story worth sharing?</p>
                     <Link className="editorial-button" to="/create">Write a story <span aria-hidden="true">→</span></Link>
-                </div>
+                </div>}
             </div>
         </main>
     );

@@ -1,161 +1,100 @@
 # BEYOND </>
 
-BEYOND </> is a modern editorial blog and content platform built with React and Vite. It is designed for sharing ideas, stories, tutorials, and thoughtful commentary in a clean, fast, and engaging digital experience.
+BEYOND is an editorial blog built with React, Vite, and an Express API. Readers can browse published stories and sign in to read full articles. Administrators get a private dashboard for publishing stories and managing reader accounts.
 
-## About the Project
+Frontend application code lives in `frontend/`, and backend implementation code lives in `backend/`. Shared npm scripts, dependencies, and tooling configuration remain at the repository root.
 
-This project combines a polished reading experience with a flexible content structure, making it suitable for personal blogging, professional storytelling, or a developer portfolio. The platform is intentionally lightweight and easy to extend as the content and brand evolve.
-
-## Key Features
-
-- Responsive blog layout for desktop and mobile devices
-- Article listing and detail pages
-- Category-based browsing and content discovery
-- Search-driven navigation for faster exploration
-- Contact form integration for direct email delivery via EmailJS
-- Login and sign-up form interface
-- Lightweight local content store powered by JSON Server
-- Fast development workflow using Vite
-
-## Tech Stack
-
-- React 19
-- Vite
-- React Router
-- EmailJS
-- JSON Server
-- ESLint
-
-## Project Structure
-
-```bash
-.
-├── public/
-├── src/
-│   ├── Components/
-│   ├── App.jsx
-│   ├── main.jsx
-│   └── index.css
-├── data/
-│   └── db.json
-├── .env.example
-├── .gitignore
-├── eslint.config.js
-├── index.html
-├── package.json
-├── README.md
-├── vite.config.js
-└── dist/
+```text
+frontend/
+  public/
+  src/
+  index.html
+  vite.config.js
+backend/
+  data/
+  tests/
+  index.js
+  store.js
 ```
 
-## Getting Started
+## Features
 
-### Prerequisites
+- Responsive journal with category browsing and search
+- Reader registration and sign-in using password hashes and HTTP-only sessions
+- Role-based access for readers and administrators
+- Full story pages available only to signed-in users
+- Admin dashboard for creating, editing, publishing, drafting, and deleting stories
+- Reader management, including role changes and account removal
+- Persistent JSON data store initialized from `backend/data/db.json`
+- EmailJS contact form integration
 
-Before you begin, make sure you have the following installed:
+## Requirements
 
 - Node.js 18 or later
 - npm
 
-### Installation
+## Local setup
 
-1. Clone the repository:
+1. Install dependencies:
 
-```bash
-git clone <repository-url>
-cd blog
-```
+   ```bash
+   npm install
+   ```
 
-2. Install the project dependencies:
+2. Create a private `.env.local` file in the project root with your EmailJS settings and a unique administrator email and strong password. Do not commit this file.
 
-```bash
-npm install
-```
+   ```env
+   VITE_EMAILJS_SERVICE_ID=your_emailjs_service_id
+   VITE_EMAILJS_TEMPLATE_ID=your_emailjs_template_id
+   VITE_EMAILJS_PUBLIC_KEY=your_emailjs_public_key
+   ADMIN_EMAIL=admin@example.com
+   ADMIN_PASSWORD=use-a-unique-strong-password
+   API_PORT=8000
+   ```
 
-3. Create your local environment file for EmailJS:
+   The initial administrator is created when the API starts. The configured administrator password is synchronized at startup, so changing `ADMIN_PASSWORD` rotates that account's password.
 
-```bash
-cp .env.example .env.local
-```
+3. Run the API and frontend in separate terminals:
 
-Then update `.env.local` with your EmailJS credentials:
+   ```bash
+   npm run server
+   npm run dev
+   ```
 
-```env
-VITE_EMAILJS_SERVICE_ID=your_emailjs_service_id
-VITE_EMAILJS_TEMPLATE_ID=your_emailjs_template_id
-VITE_EMAILJS_PUBLIC_KEY=your_emailjs_public_key
-```
+   Vite proxies `/api` requests to the API on port 8000. Open the Vite URL shown in the terminal.
 
-4. Start the local JSON data server:
+4. Sign in with `ADMIN_EMAIL` and `ADMIN_PASSWORD` to open `/admin`. Readers can register from `/login`; new public registrations receive the reader role.
 
-```bash
-npm run server
-```
+The API stores live content and accounts in the ignored `backend/data/app-db.json` file. It is created from `backend/data/db.json` the first time the backend starts. Back up this file to preserve your live data.
 
-5. Launch the frontend development server:
+## API overview
 
-```bash
-npm run dev
-```
+| Method | Endpoint | Access | Purpose |
+| --- | --- | --- | --- |
+| `POST` | `/api/auth/signup` | Public | Register a reader |
+| `POST` | `/api/auth/login` | Public | Start a session |
+| `POST` | `/api/auth/logout` | Public | End the current session |
+| `GET` | `/api/auth/me` | Signed in | Read the current account |
+| `GET` | `/api/blogs` | Public | List published story summaries; supports `q` search |
+| `GET` | `/api/blogs/:id` | Signed in | Read a published story in full |
+| `GET/POST/PATCH/DELETE` | `/api/admin/blogs` | Admin | Manage stories |
+| `GET/PATCH/DELETE` | `/api/admin/users` | Admin | Manage reader accounts and roles |
 
-The app will be available through the local Vite URL shown in the terminal output.
+Passwords are stored as salted scrypt hashes. Session identifiers are random, stored server-side as hashes, and sent in HTTP-only, same-site cookies. The configured administrator cannot be demoted or deleted. Public registration cannot assign administrator privileges.
 
-## Available Scripts
+For production, provide `ADMIN_EMAIL` and `ADMIN_PASSWORD` through the deployment's secret manager, set `NODE_ENV=production` to enable secure cookies, persist `backend/data/app-db.json`, and route the frontend and API through the same site so the session cookie remains first-party.
 
-```bash
-npm run dev
-```
-Starts the Vite development server.
-
-```bash
-npm run server
-```
-Starts JSON Server and serves the blog content from `data/db.json`.
+## Scripts
 
 ```bash
-npm run build
+npm run dev       # Start the Vite development server
+npm run server    # Start the Express API
+npm run build     # Build the frontend for production
+npm run preview   # Preview the production frontend
+npm run lint      # Run ESLint
+npm test          # Run backend API tests
 ```
-Builds the production bundle for deployment.
 
-```bash
-npm run preview
-```
-Serves the production build locally for previewing.
+## EmailJS
 
-```bash
-npm run lint
-```
-Runs ESLint to maintain code quality and consistency.
-
-## EmailJS Configuration
-
-The contact form sends messages directly through EmailJS, allowing visitors to reach out without opening an external email client.
-
-To enable email delivery:
-
-1. Create an [EmailJS](https://www.emailjs.com/) account.
-2. Connect an email service and verify the inbox used for incoming messages.
-3. Create a template containing these variables:
-   - `{{from_name}}`
-   - `{{reply_to}}`
-   - `{{subject}}`
-   - `{{message}}`
-4. Set the template Reply-To field to `{{reply_to}}`.
-5. Add the Service ID, Template ID, and Public Key to `.env.local`.
-6. Restart the application after saving your environment variables.
-
-Important notes:
-
-- Only use the EmailJS public key in browser-exposed `VITE_` variables.
-- Do not place a private key in the frontend environment.
-- Restrict allowed origins to your production domain and local development origin.
-
-## Development Notes
-
-- Content is served through JSON Server using `data/db.json`.
-- Login and sign-up forms are available at `/login`; account submission requires an authentication backend, which is not yet connected.
-- The codebase is structured to support future enhancements such as CMS integration or a database-backed backend.
-
-## Contribution
-
-Contributions, improvements, and thoughtful refinements are welcome. Please keep the project consistent with the existing React and Vite architecture and follow the established linting and build conventions.
+The contact form sends messages through EmailJS. Configure the three `VITE_EMAILJS_*` values in `.env.local`. Only use an EmailJS public key in browser-exposed `VITE_` variables; never put a private key in frontend configuration.

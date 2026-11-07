@@ -2,7 +2,7 @@ import useFetch from "../useFetch";
 import BlogList from "./Bloglist";
 import HeroCarousel from "./HeroCarousel";
 const Home = () => {
-    const { data: blogs, isPending, error } = useFetch('http://localhost:8000/blogs');
+    const { data: blogs, isPending, error } = useFetch('/api/blogs');
 
     return (  
         <div className="home">

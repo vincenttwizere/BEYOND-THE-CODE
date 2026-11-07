@@ -31,7 +31,7 @@ const BlogList = ({ blogs, title }) => (
                 {blogs.map((blog, index) => {
                     const category = categories.find((item) => item.name === blog.category);
                     const cover = category || categories[index % categories.length];
-                    const readingTime = getReadingTime(blog.body);
+                    const readingTime = blog.readingTime || getReadingTime(blog.body || "");
 
                     return (
                         <article className="blog-preview" key={blog.id}>
@@ -66,7 +66,7 @@ const BlogList = ({ blogs, title }) => (
                                 <h3>
                                     <Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
                                 </h3>
-                                <p className="blog-preview-excerpt">{getExcerpt(blog.body)}</p>
+                                <p className="blog-preview-excerpt">{blog.excerpt || getExcerpt(blog.body || "")}</p>
                                 <Link className="blog-preview-read-link" to={`/blogs/${blog.id}`}>
                                     Read the story
                                     <ArrowRight size={16} aria-hidden="true" />

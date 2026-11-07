@@ -18,9 +18,10 @@ const Create = () => {
         setError(null);
 
         try {
-            const response = await fetch("http://localhost:8000/blogs", {
+            const response = await fetch("/api/admin/blogs", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "same-origin",
                 body: JSON.stringify({ title: title.trim(), author: author.trim(), category, body: body.trim() }),
             });
 

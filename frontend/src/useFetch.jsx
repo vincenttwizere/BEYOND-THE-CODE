@@ -10,7 +10,7 @@ const useFetch = (url) => {
 
             const abortCont = new AbortController();
             const timeoutId = setTimeout(() => {
-                fetch(url, { signal: abortCont.signal })
+                fetch(url, { signal: abortCont.signal, credentials: "same-origin" })
                     .then(res => {
                         if(!res.ok){
                             throw new Error('Could not fetch the data for that resource');

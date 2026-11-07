@@ -1,7 +1,6 @@
 import Navbar from "./Components/Navbar";
-import { Routes, Route } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Home from "./Components/Home";
-import Create from "./Components/Create";
 import BlogDetails from "./Components/BlogDetails";
 import Footer from "./Components/Footer";
 import About from "./Components/About";
@@ -12,19 +11,22 @@ import Contact from "./Components/Contact";
 import Search from "./Components/Search";
 import NotFound from "./Components/NotFound";
 import Auth from "./Components/Auth";
+import Admin from "./Components/Admin";
+import RequireAuth from "./Components/RequireAuth";
 
 const App = () => {
-  
-  return (
-  
-      <div className="App" id="top">
-        
-          <Navbar />
+    const location = useLocation();
+    const isAdminRoute = location.pathname.startsWith("/admin");
+
+    return (
+      <div className={`App${isAdminRoute ? " App-admin" : ""}`} id="top">
+        {!isAdminRoute && <Navbar />}
         <div className="content">
           <Routes>
             <Route exact path="/" element={<Home />} />
-            <Route path="/create" element={<Create />} />
-            <Route path="/blogs/:id" element={<BlogDetails />} />
+            <Route path="/create" element={<RequireAuth role="admin"><Navigate to="/admin?create=1" replace /></RequireAuth>} />
+            <Route path="/blogs/:id" element={<RequireAuth><BlogDetails /></RequireAuth>} />
+            <Route path="/admin/*" element={<RequireAuth role="admin"><Admin /></RequireAuth>} />
             <Route path="/about" element={<About />} />
             <Route path="/posts" element={<Posts />} />
             <Route path="/categories" element={<Categories />} />
@@ -35,9 +37,9 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
-        <Footer />
+        {!isAdminRoute && <Footer />}
       </div>
-  );
+    );
 };
 
 export default App;

@@ -6,7 +6,7 @@ import BlogList from "./Bloglist";
 const CategoryStories = () => {
     const { slug } = useParams();
     const category = categories.find((item) => item.slug === slug);
-    const { data: blogs, isPending, error } = useFetch("http://localhost:8000/blogs");
+    const { data: blogs, isPending, error } = useFetch("/api/blogs");
 
     if (!category) {
         return (
