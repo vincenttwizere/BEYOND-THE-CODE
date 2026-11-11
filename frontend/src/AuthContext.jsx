@@ -48,8 +48,17 @@ export function AuthProvider({ children }) {
         setUser(null);
     };
 
+    const updateProfile = async (profile) => {
+        const { user: updatedUser } = await apiRequest("/api/auth/profile", {
+            method: "PATCH",
+            body: JSON.stringify(profile),
+        });
+        setUser(updatedUser);
+        return updatedUser;
+    };
+
     return (
-        <AuthContext.Provider value={{ user, isLoading, signIn, signUp, signOut }}>
+        <AuthContext.Provider value={{ user, isLoading, signIn, signUp, signOut, updateProfile }}>
             {children}
         </AuthContext.Provider>
     );

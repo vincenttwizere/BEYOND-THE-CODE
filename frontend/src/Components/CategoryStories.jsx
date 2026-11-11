@@ -5,14 +5,22 @@ import BlogList from "./Bloglist";
 
 const CategoryStories = () => {
     const { slug } = useParams();
-    const category = categories.find((item) => item.slug === slug);
+    const { data: categoryData, isPending: categoriesPending, error: categoriesError } = useFetch("/api/categories");
+    const storedCategory = categoryData?.find((item) => item.slug === slug);
+    const category = storedCategory
+        ? { ...categories.find((item) => item.name === storedCategory.name), ...storedCategory, heading: categories.find((item) => item.name === storedCategory.name)?.heading || storedCategory.name, description: categories.find((item) => item.name === storedCategory.name)?.description || `Stories filed under ${storedCategory.name}.` }
+        : null;
     const { data: blogs, isPending, error } = useFetch("/api/blogs");
+
+    if (categoriesPending) {
+        return <main className="editorial-page"><div className="editorial-page-shell editorial-notice" role="status">Loading category…</div></main>;
+    }
 
     if (!category) {
         return (
             <main className="editorial-page">
                 <div className="editorial-page-shell editorial-not-found">
-                    <p className="editorial-eyebrow">Category not found</p>
+                    <p className="editorial-eyebrow">{categoriesError || "Category not found"}</p>
                     <h1>That collection isn’t here.</h1>
                     <Link className="editorial-text-link" to="/categories">Browse all categories <span aria-hidden="true">→</span></Link>
                 </div>

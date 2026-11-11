@@ -1,10 +1,21 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import useFetch from "../useFetch";
-import { featuredCategories } from "../data/categories";
+import categories from "../data/categories";
 
 const Categories = () => {
-    const { data: blogs, isPending, error } = useFetch("/api/blogs");
+    const { data: categoryData, isPending, error } = useFetch("/api/categories");
+    const categoryCards = (categoryData || []).map((item) => {
+        const details = categories.find((category) => category.name === item.name);
+        return {
+            ...details,
+            ...item,
+            heading: details?.heading || item.name,
+            description: details?.description || `Stories filed under ${item.name}.`,
+            image: details?.image || "/images/hero-writing.jpg",
+            imageAlt: details?.imageAlt || `Stories in ${item.name}`,
+        };
+    });
 
     return (
         <main className="editorial-page">
@@ -12,13 +23,13 @@ const Categories = () => {
                 <header className="editorial-page-heading">
                     <p className="editorial-eyebrow">Find your next read</p>
                     <h1>Explore by category</h1>
-                    <p>Explore stories through these three featured categories.</p>
+                    <p>Explore stories through every category in the journal.</p>
                 </header>
                 {isPending && <div className="editorial-notice" role="status">Loading categories…</div>}
                 {error && <div className="editorial-notice editorial-notice-error" role="alert">{error}</div>}
                 <div className="category-grid">
-                    {featuredCategories.map((category, index) => {
-                        const count = blogs?.filter((blog) => blog.category === category.name).length;
+                    {categoryCards.map((category, index) => {
+                        const count = category.postCount;
                         return (
                             <Link className="category-card" to={`/categories/${category.slug}`} key={category.slug}>
                                 <img src={category.image} alt={category.imageAlt} loading="lazy" />
@@ -35,6 +46,7 @@ const Categories = () => {
                             </Link>
                         );
                     })}
+                    {!isPending && !error && categoryCards.length === 0 && <p className="editorial-notice">No categories have been created yet.</p>}
                 </div>
             </div>
         </main>

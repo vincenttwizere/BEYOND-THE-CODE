@@ -49,6 +49,42 @@ export class JsonStore {
     this.data.blogs ||= [];
     this.data.users ||= [];
     this.data.sessions ||= [];
+    this.data.comments ||= [];
+    this.data.subscribers ||= [];
+    this.data.media ||= [];
+    this.data.pages ||= [];
+    this.data.newsletters ||= [];
+    this.data.analytics ||= [];
+    this.data.savedPosts ||= [];
+    this.data.categories ||= [...new Set(this.data.blogs.map((blog) => blog.category).filter(Boolean))]
+      .map((name) => ({ id: name, name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") }));
+    this.data.tags ||= [...new Set(this.data.blogs.flatMap((blog) => blog.tags || []).filter(Boolean))]
+      .map((name) => ({ id: name, name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") }));
+    for (const blog of this.data.blogs) {
+      blog.status ||= blog.published ? "published" : "draft";
+      blog.published = blog.status === "published";
+      blog.slug ||= blog.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      blog.excerpt ||= blog.body.slice(0, 180);
+      blog.tags ||= [];
+    }
+    const defaultSettings = {
+      siteName: "BEYOND </>",
+      tagline: "A journal for curious minds",
+      logo: "",
+      favicon: "",
+      seoTitle: "",
+      seoDescription: "",
+      socialLinks: {},
+      commentsEnabled: true,
+      maintenanceMode: false,
+      navigation: [],
+      footerLinks: [],
+    };
+    this.data.settings = {
+      ...defaultSettings,
+      ...this.data.settings,
+      socialLinks: { ...defaultSettings.socialLinks, ...(this.data.settings?.socialLinks || {}) },
+    };
   }
 
   async getData() {

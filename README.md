@@ -1,6 +1,6 @@
 # BEYOND </>
 
-BEYOND is an editorial blog built with React, Vite, and an Express API. Readers can browse published stories and sign in to read full articles. Administrators get a private dashboard for publishing stories and managing reader accounts.
+BEYOND is an editorial blog built with React, Vite, and an Express API. Readers can browse published stories and sign in to read full articles. Administrators get a private dashboard for managing the publication and its community.
 
 Frontend application code lives in `frontend/`, and backend implementation code lives in `backend/`. Shared npm scripts, dependencies, and tooling configuration remain at the repository root.
 
@@ -23,10 +23,12 @@ backend/
 - Reader registration and sign-in using password hashes and HTTP-only sessions
 - Role-based access for readers and administrators
 - Full story pages available only to signed-in users
-- Admin dashboard for creating, editing, publishing, drafting, and deleting stories
-- Reader management, including role changes and account removal
+- Responsive admin dashboard with overview, posts, categories and tags, media, comments, users, newsletters, analytics, pages/navigation, and site settings
+- Post editor with scheduled publishing, SEO fields, featured images, tags, and Markdown/code-block preview
+- Comment moderation, account management, media uploads, analytics, subscriber management, and reader profiles with saved posts
 - Persistent JSON data store initialized from `backend/data/db.json`
 - EmailJS contact form integration
+- Newsletter subscription collection and draft composition; delivery requires a configured server-side email provider
 
 ## Requirements
 
@@ -65,7 +67,11 @@ backend/
 
 4. Sign in with `ADMIN_EMAIL` and `ADMIN_PASSWORD` to open `/admin`. Readers can register from `/login`; new public registrations receive the reader role.
 
-The API stores live content and accounts in the ignored `backend/data/app-db.json` file. It is created from `backend/data/db.json` the first time the backend starts. Back up this file to preserve your live data.
+The API stores live content and accounts in the ignored `backend/data/app-db.json` file (or the path in `DATA_FILE`). It is created from `backend/data/db.json` the first time the backend starts. Back up this file to preserve your live data. The JSON store initializes `blogs`, `users`, `sessions`, `comments`, `subscribers`, `media`, `pages`, `newsletters`, `analytics`, `savedPosts`, `categories`, `tags`, and `settings`; existing blog records are normalized with status, slug, excerpt, and tags. Uploaded image files are stored in a `media/` directory next to the active data file.
+
+Scheduled posts are published when a public or admin blog list is read after their scheduled time; this does not require a separate scheduler process. Analytics records first-party page views without storing visitor IP addresses. Admin dashboard requests and media-file retrieval are excluded from page-view tracking.
+
+Newsletter drafts can be saved and subscribers can be managed/exported from the dashboard. The send endpoint intentionally returns `503` until a server-side email provider is configured; the contact-form EmailJS credentials are not used for bulk delivery.
 
 ## API overview
 
@@ -75,10 +81,20 @@ The API stores live content and accounts in the ignored `backend/data/app-db.jso
 | `POST` | `/api/auth/login` | Public | Start a session |
 | `POST` | `/api/auth/logout` | Public | End the current session |
 | `GET` | `/api/auth/me` | Signed in | Read the current account |
+| `PATCH` | `/api/auth/profile` | Signed in | Update the current profile or password |
 | `GET` | `/api/blogs` | Public | List published story summaries; supports `q` search |
 | `GET` | `/api/blogs/:id` | Signed in | Read a published story in full |
-| `GET/POST/PATCH/DELETE` | `/api/admin/blogs` | Admin | Manage stories |
-| `GET/PATCH/DELETE` | `/api/admin/users` | Admin | Manage reader accounts and roles |
+| `GET/POST` | `/api/blogs/:id/comments` | Signed in for create | Read comments or submit a comment for moderation |
+| `GET/POST/DELETE` | `/api/me/saved-posts` | Signed in | Manage the current reader's saved posts |
+| `POST` | `/api/analytics/pageview` | Public | Record an anonymized page-view event |
+| `POST` | `/api/newsletter/subscribe` | Public | Subscribe with consent |
+| `GET/POST/PATCH/DELETE` | `/api/admin/blogs` | Admin | Manage posts; detail mutations use `/api/admin/blogs/:id` |
+| `/api/admin/overview`, `/api/admin/analytics` | Admin | Read dashboard metrics and analytics |
+| `/api/admin/categories`, `/api/admin/tags` | Admin | Manage taxonomy |
+| `/api/admin/comments`, `/api/admin/users`, `/api/admin/subscribers`, `/api/admin/newsletters` | Admin | Moderate and manage community records |
+| `/api/admin/media`, `/api/admin/pages`, `/api/admin/settings` | Admin | Manage uploads, static pages, navigation, and site settings |
+
+Admin dashboard routes are protected in the frontend and all `/api/admin/*` endpoints require an administrator session. Ordinary accounts retain the existing `reader` role in stored data and API responses and cannot access the dashboard.
 
 Passwords are stored as salted scrypt hashes. Session identifiers are random, stored server-side as hashes, and sent in HTTP-only, same-site cookies. The configured administrator cannot be demoted or deleted. Public registration cannot assign administrator privileges.
 
