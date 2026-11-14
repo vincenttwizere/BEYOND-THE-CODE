@@ -20,6 +20,7 @@ const BlogDetails = () => {
     const [isSubmittingComment, setIsSubmittingComment] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [saveError, setSaveError] = useState("");
+    const [isUpdatingSave, setIsUpdatingSave] = useState(false);
     const [likeState, setLikeState] = useState({ count: 0, isLiked: false });
     const [isUpdatingLike, setIsUpdatingLike] = useState(false);
     const [likeError, setLikeError] = useState("");
@@ -110,12 +111,15 @@ const BlogDetails = () => {
     };
 
     const toggleSavePost = async () => {
+        setIsUpdatingSave(true);
         setSaveError("");
         try {
             await apiRequest(`/api/me/saved-posts/${id}`, { method: isSaved ? "DELETE" : "POST" });
             setIsSaved((current) => !current);
         } catch (saveErrorValue) {
             setSaveError(saveErrorValue.message);
+        } finally {
+            setIsUpdatingSave(false);
         }
     };
 
@@ -186,24 +190,30 @@ const BlogDetails = () => {
                             </span>
                             <p>Written by <strong>{blog.author}</strong></p>
                         </div>
-                        {user && <div className="article-social-actions">
-                            <div className="article-like-action">
+                    </header>
+                    <div className="article-divider" aria-hidden="true" />
+                    <RichText body={blog.body} className="article-body" />
+                    {user && <div className="article-social-actions" aria-label="Post actions">
+                            <div className="article-social-action">
                                 <button type="button" onClick={toggleLike} disabled={isUpdatingLike} aria-pressed={likeState.isLiked}>
                                     <Heart size={16} fill={likeState.isLiked ? "currentColor" : "none"} />
                                     {likeState.isLiked ? "Liked" : "Like"} <span>{likeState.count}</span>
                                 </button>
                                 {likeError && <p role="alert">{likeError}</p>}
                             </div>
-                            <div className="article-share-action">
+                            <div className="article-social-action">
                                 <button type="button" onClick={sharePost}><Share2 size={16} />Share</button>
                                 {shareNotice && <p role="status">{shareNotice}</p>}
                                 {shareError && <p role="alert">{shareError}</p>}
                             </div>
+                            <div className="article-social-action">
+                                <button type="button" onClick={toggleSavePost} disabled={isUpdatingSave} aria-pressed={isSaved}>
+                                    {isSaved ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                                    {isSaved ? "Saved" : "Save post"}
+                                </button>
+                                {saveError && <p role="alert">{saveError}</p>}
+                            </div>
                         </div>}
-                        {user && <div className="article-save-action"><button type="button" onClick={toggleSavePost} aria-pressed={isSaved}>{isSaved ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}{isSaved ? "Saved" : "Save post"}</button>{saveError && <p role="alert">{saveError}</p>}</div>}
-                    </header>
-                    <div className="article-divider" aria-hidden="true" />
-                    <RichText body={blog.body} className="article-body" />
                     <section className="article-comments" aria-labelledby="comments-heading">
                         <header><p className="article-eyebrow">Community</p><h2 id="comments-heading">Conversation</h2></header>
                         {comments.length ? <div className="article-comment-list">{comments.map((comment) => (
