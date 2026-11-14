@@ -331,6 +331,44 @@ export function createApp(store) {
     return res.status(204).end();
   }));
 
+  app.get("/api/blogs/:id/likes", requireAuth, asyncRoute(async (req, res) => {
+    const data = await store.getData();
+    const blog = data.blogs.find((item) => String(item.id) === req.params.id);
+    if (!blog || !(blog.status ? blog.status === "published" : blog.published)) {
+      return res.status(404).json({ error: "This post could not be found." });
+    }
+    const postLikes = data.likes.filter((item) => String(item.postId) === String(blog.id));
+    return res.json({
+      count: postLikes.length,
+      isLiked: postLikes.some((item) => item.userId === req.user.id),
+    });
+  }));
+
+  app.post("/api/me/liked-posts/:postId", requireAuth, asyncRoute(async (req, res) => {
+    const result = await store.update((data) => {
+      const blog = data.blogs.find((item) => String(item.id) === req.params.postId);
+      if (!blog || !(blog.status ? blog.status === "published" : blog.published)) return null;
+      if (!data.likes.some((item) => item.userId === req.user.id && String(item.postId) === String(blog.id))) {
+        data.likes.push({ userId: req.user.id, postId: blog.id, createdAt: new Date().toISOString() });
+      }
+      const postLikes = data.likes.filter((item) => String(item.postId) === String(blog.id));
+      return { count: postLikes.length, isLiked: true };
+    });
+    if (!result) return res.status(404).json({ error: "This post could not be found." });
+    return res.json(result);
+  }));
+
+  app.delete("/api/me/liked-posts/:postId", requireAuth, asyncRoute(async (req, res) => {
+    const result = await store.update((data) => {
+      data.likes = data.likes.filter((item) => !(item.userId === req.user.id && String(item.postId) === req.params.postId));
+      return {
+        count: data.likes.filter((item) => String(item.postId) === req.params.postId).length,
+        isLiked: false,
+      };
+    });
+    return res.json(result);
+  }));
+
   app.get("/api/blogs", asyncRoute(async (req, res) => {
     const data = await getDataWithDuePosts();
     const query = typeof req.query.q === "string" ? req.query.q.trim().toLocaleLowerCase() : "";

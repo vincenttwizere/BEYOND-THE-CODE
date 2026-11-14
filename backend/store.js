@@ -56,6 +56,7 @@ export class JsonStore {
     this.data.newsletters ||= [];
     this.data.analytics ||= [];
     this.data.savedPosts ||= [];
+    this.data.likes ||= [];
     this.data.categories ||= [...new Set(this.data.blogs.map((blog) => blog.category).filter(Boolean))]
       .map((name) => ({ id: name, name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") }));
     this.data.tags ||= [...new Set(this.data.blogs.flatMap((blog) => blog.tags || []).filter(Boolean))]

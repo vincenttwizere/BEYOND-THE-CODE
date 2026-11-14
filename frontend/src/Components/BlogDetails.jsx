@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Bookmark, BookmarkCheck } from "lucide-react";
+import { Bookmark, BookmarkCheck, Heart, Share2 } from "lucide-react";
 import useFetch from "../useFetch";
 import categories from "../data/categories";
 import { useAuth } from "../useAuth";
@@ -20,6 +20,11 @@ const BlogDetails = () => {
     const [isSubmittingComment, setIsSubmittingComment] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [saveError, setSaveError] = useState("");
+    const [likeState, setLikeState] = useState({ count: 0, isLiked: false });
+    const [isUpdatingLike, setIsUpdatingLike] = useState(false);
+    const [likeError, setLikeError] = useState("");
+    const [shareNotice, setShareNotice] = useState("");
+    const [shareError, setShareError] = useState("");
     const category = blog && categories.find((item) => item.name === blog.category);
 
     useEffect(() => {
@@ -55,12 +60,14 @@ const BlogDetails = () => {
             apiRequest(`/api/blogs/${id}/comments`),
             user ? apiRequest("/api/me/comments") : Promise.resolve([]),
             user ? apiRequest("/api/me/saved-posts") : Promise.resolve([]),
+            user ? apiRequest(`/api/blogs/${id}/likes`) : Promise.resolve({ count: 0, isLiked: false }),
         ])
-            .then(([publicComments, ownComments, savedPosts]) => {
+            .then(([publicComments, ownComments, savedPosts, postLikes]) => {
                 if (!isMounted) return;
                 setComments(publicComments);
                 setMyComments(ownComments.filter((comment) => String(comment.postId) === String(id)));
                 setIsSaved(savedPosts.some((post) => String(post.id) === String(id)));
+                setLikeState(postLikes);
             })
             .catch((loadError) => {
                 if (isMounted) setCommentError(loadError.message);
@@ -111,6 +118,41 @@ const BlogDetails = () => {
             setSaveError(saveErrorValue.message);
         }
     };
+
+    const toggleLike = async () => {
+        setIsUpdatingLike(true);
+        setLikeError("");
+        try {
+            const result = await apiRequest(`/api/me/liked-posts/${id}`, {
+                method: likeState.isLiked ? "DELETE" : "POST",
+            });
+            setLikeState(result);
+        } catch (likeErrorValue) {
+            setLikeError(likeErrorValue.message);
+        } finally {
+            setIsUpdatingLike(false);
+        }
+    };
+
+    const sharePost = async () => {
+        setShareNotice("");
+        setShareError("");
+        const shareData = { title: blog.title, url: window.location.href };
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+                setShareNotice("Story shared.");
+            } else if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(shareData.url);
+                setShareNotice("Story link copied.");
+            } else {
+                throw new Error("Sharing is not available in this browser.");
+            }
+        } catch (shareErrorValue) {
+            if (shareErrorValue.name !== "AbortError") setShareError(shareErrorValue.message);
+        }
+    };
+
     return (  
         <div className="blog-details">
             <div className="article-shell">
@@ -144,6 +186,20 @@ const BlogDetails = () => {
                             </span>
                             <p>Written by <strong>{blog.author}</strong></p>
                         </div>
+                        {user && <div className="article-social-actions">
+                            <div className="article-like-action">
+                                <button type="button" onClick={toggleLike} disabled={isUpdatingLike} aria-pressed={likeState.isLiked}>
+                                    <Heart size={16} fill={likeState.isLiked ? "currentColor" : "none"} />
+                                    {likeState.isLiked ? "Liked" : "Like"} <span>{likeState.count}</span>
+                                </button>
+                                {likeError && <p role="alert">{likeError}</p>}
+                            </div>
+                            <div className="article-share-action">
+                                <button type="button" onClick={sharePost}><Share2 size={16} />Share</button>
+                                {shareNotice && <p role="status">{shareNotice}</p>}
+                                {shareError && <p role="alert">{shareError}</p>}
+                            </div>
+                        </div>}
                         {user && <div className="article-save-action"><button type="button" onClick={toggleSavePost} aria-pressed={isSaved}>{isSaved ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}{isSaved ? "Saved" : "Save post"}</button>{saveError && <p role="alert">{saveError}</p>}</div>}
                     </header>
                     <div className="article-divider" aria-hidden="true" />

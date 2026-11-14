@@ -73,6 +73,26 @@ test("reader and administrator access is enforced across the CMS API", async () 
     assert.equal((await request("/api/admin/categories", { headers: { cookie: readerCookie } })).status, 403);
     assert.equal((await request("/api/admin/comments", { headers: { cookie: readerCookie } })).status, 403);
 
+    assert.equal((await request("/api/blogs/1/likes")).status, 401);
+    const initialLikes = await request("/api/blogs/1/likes", { headers: { cookie: readerCookie } });
+    assert.deepEqual(await initialLikes.json(), { count: 0, isLiked: false });
+    const likeResponse = await request("/api/me/liked-posts/1", {
+        method: "POST",
+        headers: { cookie: readerCookie },
+    });
+    assert.deepEqual(await likeResponse.json(), { count: 1, isLiked: true });
+    const duplicateLike = await request("/api/me/liked-posts/1", {
+        method: "POST",
+        headers: { cookie: readerCookie },
+    });
+    assert.deepEqual(await duplicateLike.json(), { count: 1, isLiked: true });
+    assert.deepEqual(await (await request("/api/blogs/1/likes", { headers: { cookie: readerCookie } })).json(), { count: 1, isLiked: true });
+    const unlikeResponse = await request("/api/me/liked-posts/1", {
+        method: "DELETE",
+        headers: { cookie: readerCookie },
+    });
+    assert.deepEqual(await unlikeResponse.json(), { count: 0, isLiked: false });
+
     const duplicateSignup = await request("/api/auth/signup", {
         method: "POST",
         headers: { "content-type": "application/json" },
