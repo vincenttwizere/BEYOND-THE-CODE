@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Bookmark, BookmarkCheck, Heart, Share2 } from "lucide-react";
+import { Bookmark, BookmarkCheck, Heart, MessageCircle, Share2 } from "lucide-react";
 import useFetch from "../useFetch";
 import categories from "../data/categories";
 import { useAuth } from "../useAuth";
@@ -157,6 +157,12 @@ const BlogDetails = () => {
         }
     };
 
+    const focusCommentForm = () => {
+        const commentInput = document.getElementById("article-comment-input");
+        commentInput?.scrollIntoView({ behavior: "smooth", block: "center" });
+        commentInput?.focus({ preventScroll: true });
+    };
+
     return (  
         <div className="blog-details">
             <div className="article-shell">
@@ -193,7 +199,7 @@ const BlogDetails = () => {
                     </header>
                     <div className="article-divider" aria-hidden="true" />
                     <RichText body={blog.body} className="article-body" />
-                    {user && <div className="article-social-actions" aria-label="Post actions">
+                    {user && <div className="article-social-actions" role="group" aria-label="Post actions">
                             <div className="article-social-action">
                                 <button type="button" onClick={toggleLike} disabled={isUpdatingLike} aria-pressed={likeState.isLiked}>
                                     <Heart size={16} fill={likeState.isLiked ? "currentColor" : "none"} />
@@ -205,6 +211,9 @@ const BlogDetails = () => {
                                 <button type="button" onClick={sharePost}><Share2 size={16} />Share</button>
                                 {shareNotice && <p role="status">{shareNotice}</p>}
                                 {shareError && <p role="alert">{shareError}</p>}
+                            </div>
+                            <div className="article-social-action">
+                                <button type="button" onClick={focusCommentForm}><MessageCircle size={16} />Comment</button>
                             </div>
                             <div className="article-social-action">
                                 <button type="button" onClick={toggleSavePost} disabled={isUpdatingSave} aria-pressed={isSaved}>
