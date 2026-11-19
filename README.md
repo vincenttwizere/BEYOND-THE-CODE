@@ -1,34 +1,66 @@
-# BEYOND </>
+# BEYOND THE CODE
 
-BEYOND is an editorial blog built with React, Vite, and an Express API. Readers can browse published stories and sign in to read full articles. Administrators get a private dashboard for managing the publication and its community.
+BEYOND THE CODE is a responsive editorial blog and content-management application. Readers can browse published stories, search and filter content, register for an account, save posts, and participate in moderated discussions. Administrators use a private dashboard to manage stories, taxonomies, media, users, pages, newsletters, analytics, and site settings.
 
-Frontend application code lives in `frontend/`, and backend implementation code lives in `backend/`. Shared npm scripts, dependencies, and tooling configuration remain at the repository root.
+## Technology
+
+- React 19 and React Router
+- Vite
+- Express
+- JSON file storage
+- Node.js built-in test runner
+- EmailJS for the public contact form
+- Lucide React icons
+
+## Project structure
 
 ```text
 frontend/
-  public/
+  public/       Static images and public assets
   src/
-  index.html
+    Components/ React views and dashboard components
+    App.jsx     Application routes
+    AuthContext.jsx
+    admin.css
+    index.css
   vite.config.js
+
 backend/
   data/
+    db.json     Initial application data
   tests/
-  index.js
-  store.js
+    api.test.js
+  index.js      Express API and application bootstrap
+  store.js      JSON data store
+
+.env.local      Local private configuration
+package.json
 ```
 
 ## Features
 
-- Responsive journal with category browsing and search
-- Reader registration and sign-in using password hashes and HTTP-only sessions
-- Role-based access for readers and administrators
-- Full story pages available only to signed-in users
-- Responsive admin dashboard with overview, posts, categories and tags, media, comments, users, newsletters, analytics, pages/navigation, and site settings
-- Post editor with scheduled publishing, SEO fields, featured images, tags, and Markdown/code-block preview
-- Comment moderation, account management, media uploads, analytics, subscriber management, and reader profiles with saved posts
-- Persistent JSON data store initialized from `backend/data/db.json`
-- EmailJS contact form integration
-- Newsletter subscription collection and draft composition; delivery requires a configured server-side email provider
+### For readers
+
+- Responsive home, category, search, and post views
+- Registration, sign-in, profile management, and password updates
+- Full articles restricted to signed-in readers
+- Saved-post and liked-post collections
+- Reader profiles and comments
+- Newsletter subscription with consent
+- Contact form powered by EmailJS
+
+### For administrators
+
+- Overview and analytics dashboards
+- Draft, scheduled, published, and archived posts
+- Markdown and code-block editing with SEO and featured-image fields
+- Category and tag management
+- Comment moderation
+- User suspension, banning, and role management
+- Media uploads and library management
+- Static pages and navigation settings
+- Newsletter drafts and subscriber management
+- Maintenance mode and general site settings
 
 ## Requirements
 
@@ -43,62 +75,99 @@ backend/
    npm install
    ```
 
-2. Create a private `.env.local` file in the project root with your EmailJS settings and a unique administrator email and strong password. Do not commit this file.
+2. Create `.env.local` in the repository root:
 
    ```env
-   VITE_EMAILJS_SERVICE_ID=your_emailjs_service_id
-   VITE_EMAILJS_TEMPLATE_ID=your_emailjs_template_id
-   VITE_EMAILJS_PUBLIC_KEY=your_emailjs_public_key
-   ADMIN_EMAIL=admin@example.com
-   ADMIN_PASSWORD=use-a-unique-strong-password
+   # Public browser variables for the EmailJS contact form
+   VITE_EMAILJS_SERVICE_ID=your_service_id
+   VITE_EMAILJS_TEMPLATE_ID=your_template_id
+   VITE_EMAILJS_PUBLIC_KEY=your_public_key
+
+   # Express API configuration
    API_PORT=8000
+   ADMIN_EMAIL=admin@example.com
+   ADMIN_PASSWORD=use-a-unique-password
+
+   # Optional: custom live-data location
+   # DATA_FILE=C:\absolute\path\to\app-db.json
    ```
 
-   The initial administrator is created when the API starts. The configured administrator password is synchronized at startup, so changing `ADMIN_PASSWORD` rotates that account's password.
+   `.env.local` is ignored by Git. Use a public EmailJS key only; never put a private EmailJS key in a `VITE_*` variable.
 
-3. Run the API and frontend in separate terminals:
+3. Start the API and frontend in separate terminals:
 
    ```bash
    npm run server
    npm run dev
    ```
 
-   Vite proxies `/api` requests to the API on port 8000. Open the Vite URL shown in the terminal.
+   Vite proxies `/api` requests to `http://localhost:8000`. Open the URL printed by Vite.
 
-4. Sign in with `ADMIN_EMAIL` and `ADMIN_PASSWORD` to open `/admin`. Readers can register from `/login`; new public registrations receive the reader role.
+4. Sign in at `/login` with `ADMIN_EMAIL` and `ADMIN_PASSWORD`, then open `/admin`.
 
-The API stores live content and accounts in the ignored `backend/data/app-db.json` file (or the path in `DATA_FILE`). It is created from `backend/data/db.json` the first time the backend starts. Back up this file to preserve your live data. The JSON store initializes `blogs`, `users`, `sessions`, `comments`, `subscribers`, `media`, `pages`, `newsletters`, `analytics`, `savedPosts`, `categories`, `tags`, and `settings`; existing blog records are normalized with status, slug, excerpt, and tags. Uploaded image files are stored in a `media/` directory next to the active data file.
+   Reader registrations are public and always receive the `reader` role. The administrator account is created or synchronized on API startup.
 
-Scheduled posts are published when a public or admin blog list is read after their scheduled time; this does not require a separate scheduler process. Analytics records first-party page views without storing visitor IP addresses. Admin dashboard requests and media-file retrieval are excluded from page-view tracking.
+## Environment variables
 
-Newsletter drafts can be saved and subscribers can be managed/exported from the dashboard. The send endpoint intentionally returns `503` until a server-side email provider is configured; the contact-form EmailJS credentials are not used for bulk delivery.
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `VITE_EMAILJS_SERVICE_ID` | For contact form | EmailJS service identifier |
+| `VITE_EMAILJS_TEMPLATE_ID` | For contact form | EmailJS template identifier |
+| `VITE_EMAILJS_PUBLIC_KEY` | For contact form | Browser-safe EmailJS public key |
+| `API_PORT` | No | API port; defaults to `8000` |
+| `ADMIN_EMAIL` | Yes | Initial/synchronized administrator email |
+| `ADMIN_PASSWORD` | Yes | Initial/synchronized administrator password |
+| `DATA_FILE` | No | Custom path for the live JSON database |
+| `NODE_ENV` | No | Set to `production` to enable secure cookies |
+
+Changing `ADMIN_PASSWORD` rotates the password for the configured administrator account. The configured administrator cannot be demoted or deleted through the dashboard.
+
+## Data and content behavior
+
+The API creates `backend/data/app-db.json` from `backend/data/db.json` on first startup. This live file stores accounts, sessions, posts, comments, subscribers, media metadata, pages, newsletters, analytics, saved posts, liked posts, categories, tags, and settings.
+
+`app-db.json` is ignored by Git. Back it up before replacing or redeploying the application. Uploaded files are stored next to the active JSON data file.
+
+- Scheduled posts become published when a public or administrator blog list is requested after their scheduled time.
+- Analytics uses first-party page-view events and does not store visitor IP addresses.
+- Passwords are salted with scrypt.
+- Session tokens are random and stored server-side as hashes in HTTP-only, same-site cookies.
+- Public registration cannot assign administrator privileges.
 
 ## API overview
 
 | Method | Endpoint | Access | Purpose |
 | --- | --- | --- | --- |
+| `GET` | `/api/health` | Public | Health check |
+| `GET` | `/api/site-settings` | Public | Public site configuration |
+| `GET` | `/api/pages` | Public | List published static pages |
+| `GET` | `/api/pages/:slug` | Public | Read a published static page |
 | `POST` | `/api/auth/signup` | Public | Register a reader |
 | `POST` | `/api/auth/login` | Public | Start a session |
-| `POST` | `/api/auth/logout` | Public | End the current session |
+| `POST` | `/api/auth/logout` | Public | End a session |
 | `GET` | `/api/auth/me` | Signed in | Read the current account |
-| `PATCH` | `/api/auth/profile` | Signed in | Update the current profile or password |
-| `GET` | `/api/blogs` | Public | List published story summaries; supports `q` search |
-| `GET` | `/api/blogs/:id` | Signed in | Read a published story in full |
-| `GET/POST` | `/api/blogs/:id/comments` | Signed in for create | Read comments or submit a comment for moderation |
-| `GET/POST/DELETE` | `/api/me/saved-posts` | Signed in | Manage the current reader's saved posts |
-| `POST` | `/api/analytics/pageview` | Public | Record an anonymized page-view event |
-| `POST` | `/api/newsletter/subscribe` | Public | Subscribe with consent |
-| `GET/POST/PATCH/DELETE` | `/api/admin/blogs` | Admin | Manage posts; detail mutations use `/api/admin/blogs/:id` |
-| `/api/admin/overview`, `/api/admin/analytics` | Admin | Read dashboard metrics and analytics |
-| `/api/admin/categories`, `/api/admin/tags` | Admin | Manage taxonomy |
-| `/api/admin/comments`, `/api/admin/users`, `/api/admin/subscribers`, `/api/admin/newsletters` | Admin | Moderate and manage community records |
-| `/api/admin/media`, `/api/admin/pages`, `/api/admin/settings` | Admin | Manage uploads, static pages, navigation, and site settings |
+| `PATCH` | `/api/auth/profile` | Signed in | Update profile or password |
+| `GET` | `/api/blogs` | Public | List published posts; supports `q` search |
+| `GET` | `/api/blogs/:id` | Signed in | Read a full published post |
+| `GET/POST` | `/api/blogs/:id/comments` | Signed in to create | Read or submit comments |
+| `GET/POST/DELETE` | `/api/me/saved-posts` | Signed in | Manage saved posts |
+| `GET/POST/DELETE` | `/api/blogs/:id/likes` and `/api/me/liked-posts/:id` | Signed in | Read or change post likes |
+| `POST` | `/api/analytics/pageview` | Public | Record an anonymized page view |
+| `POST` | `/api/newsletter/subscribe` | Public | Subscribe to the newsletter |
+| `GET/POST/PATCH/DELETE` | `/api/admin/blogs` | Admin | Manage posts |
+| `GET` | `/api/admin/overview` | Admin | Read dashboard metrics |
+| `GET` | `/api/admin/analytics` | Admin | Read analytics |
+| `GET/POST/PATCH/DELETE` | `/api/admin/categories` | Admin | Manage categories |
+| `GET/POST/PATCH/DELETE` | `/api/admin/tags` | Admin | Manage tags |
+| `GET/PATCH/DELETE` | `/api/admin/comments` | Admin | Moderate comments |
+| `GET/PATCH/DELETE` | `/api/admin/users` | Admin | Manage accounts |
+| `GET/PATCH/DELETE` | `/api/admin/subscribers` | Admin | Manage newsletter subscribers |
+| `GET/POST/PATCH/DELETE` | `/api/admin/newsletters` | Admin | Manage newsletter drafts |
+| `GET/POST/PATCH/DELETE` | `/api/admin/media` | Admin | Manage media |
+| `GET/POST/PATCH/DELETE` | `/api/admin/pages` | Admin | Manage static pages |
+| `GET/PATCH` | `/api/admin/settings` | Admin | Read or update site settings |
 
-Admin dashboard routes are protected in the frontend and all `/api/admin/*` endpoints require an administrator session. Ordinary accounts retain the existing `reader` role in stored data and API responses and cannot access the dashboard.
-
-Passwords are stored as salted scrypt hashes. Session identifiers are random, stored server-side as hashes, and sent in HTTP-only, same-site cookies. The configured administrator cannot be demoted or deleted. Public registration cannot assign administrator privileges.
-
-For production, provide `ADMIN_EMAIL` and `ADMIN_PASSWORD` through the deployment's secret manager, set `NODE_ENV=production` to enable secure cookies, persist `backend/data/app-db.json`, and route the frontend and API through the same site so the session cookie remains first-party.
+All `/api/admin/*` endpoints require an administrator session.
 
 ## Scripts
 
@@ -106,11 +175,16 @@ For production, provide `ADMIN_EMAIL` and `ADMIN_PASSWORD` through the deploymen
 npm run dev       # Start the Vite development server
 npm run server    # Start the Express API
 npm run build     # Build the frontend for production
-npm run preview   # Preview the production frontend
+npm run preview   # Preview the production build
 npm run lint      # Run ESLint
-npm test          # Run backend API tests
+npm test          # Run Node.js API tests
 ```
 
-## EmailJS
+## Production notes
 
-The contact form sends messages through EmailJS. Configure the three `VITE_EMAILJS_*` values in `.env.local`. Only use an EmailJS public key in browser-exposed `VITE_` variables; never put a private key in frontend configuration.
+- Provide `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `DATA_FILE` through deployment secrets or environment configuration.
+- Set `NODE_ENV=production` and serve the site over HTTPS so secure session cookies are enabled.
+- Persist the live JSON file outside ephemeral container storage or mount it in a persistent volume.
+- Put the frontend and API on the same site or otherwise configure CORS and cookie behavior appropriately.
+- Keep `VITE_*` secrets public-safe. They are compiled into browser assets.
+- Configure a server-side email provider before enabling newsletter delivery. The newsletter send endpoint returns `503` until delivery is configured.
