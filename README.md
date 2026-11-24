@@ -7,6 +7,45 @@ The public side of the project provides an image-led reading experience with sea
 ![Project status](https://img.shields.io/badge/status-active_development-blue)
 ![License](https://img.shields.io/badge/license-not_yet_declared-lightgrey)
 
+## Project Preview
+
+<table>
+  <tr>
+    <td width="50%">
+      <strong>Editorial home page</strong>
+      <br><br>
+      <img src="docs/screenshots/home.png" alt="BEYOND THE CODE home page with hero carousel and latest stories" width="100%">
+    </td>
+    <td width="50%">
+      <strong>Published stories</strong>
+      <br><br>
+      <img src="docs/screenshots/posts.png" alt="BEYOND THE CODE published stories page" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <strong>Reader authentication</strong>
+      <br><br>
+      <img src="docs/screenshots/login.png" alt="BEYOND THE CODE login and sign-up experience" width="100%">
+    </td>
+    <td width="50%">
+      <strong>Administration dashboard</strong>
+      <br><br>
+      <img src="docs/screenshots/admin-dashboard.png" alt="BEYOND THE CODE administrator dashboard" width="100%">
+    </td>
+  </tr>
+</table>
+
+## Visual Identity
+
+The public experience uses an image-led editorial style. These project assets are used in the featured story carousel and article cards:
+
+<p align="center">
+  <img src="frontend/public/images/hero-valley.jpg" alt="Mountain valley featured image" width="31%">
+  <img src="frontend/public/images/hero-workspace.jpg" alt="Creative workspace featured image" width="31%">
+  <img src="frontend/public/images/hero-digital.jpg" alt="Digital development featured image" width="31%">
+</p>
+
 ## Why I Built It
 
 I wanted to go beyond a basic article viewer and build a complete editorial workflow in a small, understandable codebase. BEYOND THE CODE combines a React 19 reader experience with an Express API and local JSON storage, making the application easy to inspect, run, and extend without a database setup.
